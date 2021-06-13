@@ -216,6 +216,7 @@ let game = Bagel.init({
                                 me.scale = 3;
                                 me.img = "Enemy." + me.vars.type;
                                 me.left = game.width;
+                                me.width *= -1;
 
                                 // Avoid the edges
                                 if (me.top < 0) {
@@ -267,7 +268,7 @@ let game = Bagel.init({
                                             if (! me.vars.docked) {
                                                 me.vars.docked = true;
                                                 me.vars.vel.forward = 0;
-                                                me.angle = -90;
+                                                me.angle = 90;
                                             }
                                             let attachCoords = me.vars.attachCoords;
                                             me.x = player.x + attachCoords[0];
@@ -293,6 +294,9 @@ let game = Bagel.init({
                                                     attachCoords = player.vars.attachCoords[slotIndex];
                                                     me.vars.slotIndex = slotIndex;
                                                     me.vars.attachCoords = attachCoords;
+
+                                                    me.angle = -90;
+                                                    me.width *= -1;
                                                 }
                                             }
                                             else {
@@ -302,14 +306,14 @@ let game = Bagel.init({
                                             if (slotIndex != -1) {
                                                 let target = Bagel.maths.get.direction(me.x, me.y, player.x, player.y);
 
-                                                if (me.vars.attackDelay < -60 && me.angle > target != me.angle + me.vars.vel.angle <= target) {
+                                                if (me.vars.attackDelay < -45 && me.angle > target != me.angle + me.vars.vel.angle <= target) {
                                                     me.vars.vel.angle = 0;
                                                     me.vars.attacking = true;
                                                     me.angle = target;
                                                     me.move(5);
                                                 }
                                                 else {
-                                                    me.vars.vel.angle += 2;
+                                                    me.vars.vel.angle += 3;
                                                 }
 
                                                 me.x += game.vars.scroll; // So it stays still relative to the camera
@@ -329,7 +333,7 @@ let game = Bagel.init({
 
                                 vel.x *= 1 - ((1 / me.vars.mass) / 30);
                                 vel.y *= 1 - ((1 / me.vars.mass) / 30);
-                                vel.angle *= 1 - ((1 / me.vars.mass) / 30);
+                                vel.angle *= 1 - ((1 / me.vars.mass) / 25);
                                 vel.forward *= 1 - ((1 / me.vars.mass) / 30);
 
 

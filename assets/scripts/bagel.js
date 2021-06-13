@@ -12,6 +12,8 @@ Canvas renderer, doesn't support deleting sprites? Snaps to sprite widths and he
 maxPossibleFPS seems to be too high compared to the current fps. Test by lagging Bagel.js
 
 == Bugs ==
+Angles work weirdly, currently not capped properly. Fix cap function. Sprites can render at the wrong angle. Move seems to work
+
 Texture space can be used by multiple textures if the resolution of the textures is changed enough. Requires multiple to change on the same frame?
 
 Send to back can cause a crash in the update bitmap function. Maybe requires combination of it and bringToFront in another sprite?
@@ -439,8 +441,8 @@ Bagel = {
                                                         if (typeof img == "boolean") return ".rerun";
 
                                                         // Update the scale
-                                                        let scaleX = sprite.width / img.width;
-                                                        let scaleY = sprite.height / img.height;
+                                                        let scaleX = Math.abs(sprite.width) / img.width;
+                                                        let scaleY = Math.abs(sprite.height) / img.height;
                                                         sprite.scale = (scaleX + scaleY) / 2; // Use the average of the two
                                                     }
                                                     else {
@@ -3231,7 +3233,7 @@ Bagel = {
                         let properties = sprite.internal.Bagel.properties;
                         if (x) {
                             x = properties.x;
-                            let half = (properties.width != null? properties.width : sprite.width) / 2;
+                            let half = Math.abs((properties.width != null? properties.width : sprite.width) / 2);
                             if (! isNaN(half)) {
                                 properties.left = x - half;
                                 properties.right = x + half;
@@ -3239,7 +3241,7 @@ Bagel = {
                         }
                         if (y) {
                             y = properties.y;
-                            let half = (properties.height != null? properties.height : sprite.height) / 2;
+                            let half = Math.abs((properties.height != null? properties.height : sprite.height) / 2);
                             if (! isNaN(half)) {
                                 properties.top = y - half;
                                 properties.bottom = y + half;
@@ -8286,8 +8288,8 @@ Bagel = {
 
                                 let i = renderer.bitmapIndexes[id] * 12;
 
-                                let halfWidth = (box.width / 2);
-                                let halfHeight = (box.height / 2);
+                                let halfWidth = Math.abs(box.width / 2);
+                                let halfHeight = Math.abs(box.height / 2);
                                 let left = box.x - halfWidth;
                                 let top = box.y - halfHeight;
                                 let right = box.x + halfWidth;
