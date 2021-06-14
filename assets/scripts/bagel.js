@@ -36,6 +36,8 @@ Keep textures in single textures unless memory pressure, maybe animated textures
 
 Use texsubimage2d for updating the parts of textures that were updated. It's also faster even when the whole image needs to be updated. Might make single textures less necessary?
 
+put in front of and behind layer operations. Should also work for groups like clones. Would make layer operations unnecessary a lot of the time. e.g spaceships in front of individual stars in joined together entry
+
 = Features =
 Steps for clones
 
@@ -3473,11 +3475,12 @@ Bagel = {
                     clone.parent = parent; // Same here
                     game.game.sprites[spriteIndex] = clone;
 
+                    let spriteWas = Bagel.internal.current.sprite;
                     Bagel.internal.current.sprite = clone;
                     for (let i in clone.scripts.init) {
                         clone.scripts.init[i](clone, game, Bagel.step.sprite);
                     }
-                    Bagel.internal.current.sprite = parent;
+                    Bagel.internal.current.sprite = spriteWas;
 
                     return clone;
                 };
@@ -9346,7 +9349,7 @@ Bagel = {
         },
 
         processSpriteRenderOutput: (sprite, output) => {
-            if (output != null) {
+            if (output != null && output !== false) {
                 if (output === true) output = null;
                 sprite.internal.Bagel.renderID = output;
             }

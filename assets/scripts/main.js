@@ -11,6 +11,11 @@ let game = Bagel.init({
                 {
                     id: "Enemy.1",
                     src: "assets/imgs/roundboiEnemy.png",
+                },
+
+                {
+                    id: "Explosion",
+                    src: "assets/imgs/explosion.png",
                 }
             ],
             spritesheets: [
@@ -49,11 +54,16 @@ let game = Bagel.init({
                             }
 
                             if (game.input.mouse.down) {
-                                if (me.x < 600 && me.vars.vel.x >= 50) {
+                                if (! me.vars.mouseDown) {
+                                    me.vars.mouseDown = true;
+                                    me.vars.boostStart = me.x;
+                                }
+                                if (me.vars.boostStart < 200 && me.x > 600 && me.vars.vel.x >= 50) {
                                     game.vars.scroll = 40;
                                 }
                             }
                             else {
+                                me.vars.mouseDown = false;
                                 game.vars.scroll = 1;
                             }
                         },
@@ -91,13 +101,21 @@ let game = Bagel.init({
                             }
                         },
                         collision: me => {
+                            let explosions = game.get.sprite("Explosions");
+                            let vars = me.vars;
+                            if (vars.explosionCooldown != 0) {
+                                vars.explosionCooldown--;
+                            }
+
+                            let collided = false;
                             while (true) {
                                 if (me.touching.sprite("Enemies", {}, sprite => ! sprite.vars.attacking)) {
+                                    collided = true;
                                     let sprite = me.last.collision.sprite;
                                     let collisionVars = sprite.vars;
 
-                                    let xMove = me.vars.vel.x + game.vars.scroll;
-                                    let yMove = me.vars.vel.y;
+                                    let xMove = vars.vel.x + game.vars.scroll;
+                                    let yMove = vars.vel.y;
                                     if (Math.abs(xMove) < 0.025) {
                                         xMove = 0;
                                     }
@@ -136,9 +154,24 @@ let game = Bagel.init({
                                             break;
                                         }
                                     }
+
+                                    if (vars.explosionCooldown == 0) {
+                                        explosions.clone({
+                                            x: sprite.x,
+                                            y: sprite.y,
+                                            vars: {
+                                                scale: ((Math.abs(xMove) + Math.abs(yMove)) / 50) + + (Math.abs(sprite.width) / 50) + 0.5
+                                            }
+                                        });
+                                        vars.explosionCooldown = Math.round(Math.random() * 40) + 10;
+                                    }
                                 }
                                 else {
                                     break;
+                                }
+
+                                if (! collided) {
+                                    vars.explosionCooldown = 0;
                                 }
                             }
                         },
@@ -162,6 +195,7 @@ let game = Bagel.init({
                                 me.vars = {
                                     animationFrame: 0,
                                     animationTick: 0,
+                                    explosionCooldown: 0,
                                     attached: new Array(10).fill(false),
                                     attachCoords: [
                                         //[-100, -36],
@@ -180,6 +214,8 @@ let game = Bagel.init({
                                         [67, 36],
                                         //[100, 36]
                                     ],
+                                    mouseDown: false,
+                                    boostStart: 0,
                                     vel: {
                                         x: 0,
                                         y: 0
@@ -453,6 +489,34 @@ let game = Bagel.init({
                         }
                     ]
                 }
+            },
+            {
+                id: "Explosions",
+                clones: {
+                    scripts: {
+                        init: [
+                            me => {
+                                me.visible = true;
+                                me.scale = me.vars.scale;
+                            }
+                        ],
+                        main: [
+                            me => {
+                                me.width *= 1.01;
+                                me.height = me.width;
+                                me.alpha -= 0.025;
+                                if (me.alpha <= 0) {
+                                    me.delete();
+                                    return;
+                                }
+
+                                me.x -= game.vars.scroll;
+                                me.layer.bringToFront();
+                            }
+                        ]
+                    }
+                },
+                img: "Explosion"
             }
         ]
     },
